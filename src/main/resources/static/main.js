@@ -8,10 +8,10 @@ app.controller("PetsController", function($scope, $http) {
 
 
     $scope.employees = [];
-    $scope.employeeForm = {
-        empId: 1,
-        empNo: "",
-        empName: ""
+    $scope.pets = {
+        // Id: -1,
+        name: "",
+        color: ""
     };
 
     // Now load the data from server
@@ -21,21 +21,23 @@ app.controller("PetsController", function($scope, $http) {
     // Call: http://localhost:8080/employee
     $scope.submitEmployee = function() {
 
-        var method = "";
-        var url = "";
+        var method = "POST";
+        var url = "/addPets";
 
-        if ($scope.employeeForm.empId == -1) {
-            method = "POST";
-            url = '/employee';
-        } else {
-            method = "PUT";
-            url = '/employee';
-        }
-
+        // var method = "";
+        // var url = "";
+        //
+        // if ($scope.pets.Id == -1) {
+        //     method = "POST";
+        //     url = '/addPets';
+        // } else {
+        //     method = "PUT";
+        //     url = '/employee';
+        // }
         $http({
             method: method,
             url: url,
-            data: angular.toJson($scope.employeeForm),
+            data: angular.toJson($scope.pets),
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -56,10 +58,10 @@ app.controller("PetsController", function($scope, $http) {
     };
 
     // In case of edit
-    $scope.editEmployee = function(employee) {
-        $scope.employeeForm.empId = employee.empId;
-        $scope.employeeForm.empNo = employee.empNo;
-        $scope.employeeForm.empName = employee.empName;
+    $scope.editEmployee = function(pets) {
+        // $scope.employeeForm.empId = employee.empId;
+        $scope.pets.name = pets.name;
+        $scope.pets.color = pets.color;
     };
 
     // Private Method
@@ -68,10 +70,10 @@ app.controller("PetsController", function($scope, $http) {
     function _refreshEmployeeData() {
         $http({
             method: 'GET',
-            url: '/employees'
+            url: '/readPets'
         }).then(
             function(res) { // success
-                $scope.employees = res.data;
+                $scope.pets = res.data;
             },
             function(res) { // error
                 console.log("Error: " + res.status + " : " + res.data);
@@ -94,8 +96,8 @@ app.controller("PetsController", function($scope, $http) {
 
     // Clear the form
     function _clearFormData() {
-        $scope.employeeForm.empId = -1;
-        $scope.employeeForm.empNo = "";
-        $scope.employeeForm.empName = ""
+        // $scope.pets.Id = -1;
+        $scope.pets.name = "";
+        $scope.pets.color = ""
     };
 });

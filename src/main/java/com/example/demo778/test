@@ -1,0 +1,178 @@
+package org.o7planning.sbangularjs.dao;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.o7planning.sbangularjs.model.Employee;
+import org.o7planning.sbangularjs.model.EmployeeForm;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class EmployeeDAO {
+
+    private static final Map<Long, Employee> empMap = new HashMap<Long, Employee>();
+
+    static {
+        initEmps();
+    }
+
+    private static void initEmps() {
+        Employee emp1 = new Employee(1L, "E01", "Smith", "Clerk");
+        Employee emp2 = new Employee(2L, "E02", "Allen", "Salesman");
+        Employee emp3 = new Employee(3L, "E03", "Jones", "Manager");
+
+        empMap.put(emp1.getEmpId(), emp1);
+        empMap.put(emp2.getEmpId(), emp2);
+        empMap.put(emp3.getEmpId(), emp3);
+    }
+
+    public Long getMaxEmpId() {
+        Set<Long> keys = empMap.keySet();
+        Long max = 0L;
+        for (Long key : keys) {
+            if (key > max) {
+                max = key;
+            }
+        }
+        return max;
+    }
+
+    public Employee getEmployee(Long empId) {
+        return empMap.get(empId);
+    }
+
+    public Employee addEmployee(EmployeeForm empForm) {
+        Long empId= this.getMaxEmpId()+ 1;
+        empForm.setEmpId(empId);
+        Employee newEmp = new Employee(empForm);
+
+        empMap.put(newEmp.getEmpId(), newEmp);
+        return newEmp;
+    }
+
+    public Employee updateEmployee(EmployeeForm empForm) {
+        Employee emp = this.getEmployee(empForm.getEmpId());
+        if(emp!= null)  {
+            emp.setEmpNo(empForm.getEmpNo());
+            emp.setEmpName(empForm.getEmpName());
+            emp.setPosition(empForm.getPosition());
+        }
+        return emp;
+    }
+
+    public void deleteEmployee(Long empId) {
+        empMap.remove(empId);
+    }
+
+    public List<Employee> getAllEmployees() {
+        Collection<Employee> c = empMap.values();
+        List<Employee> list = new ArrayList<Employee>();
+        list.addAll(c);
+        return list;
+    }
+
+}
+
+
+
+package org.o7planning.sbangularjs.controller;
+
+import java.util.List;
+
+import org.o7planning.sbangularjs.dao.EmployeeDAO;
+import org.o7planning.sbangularjs.model.Employee;
+import org.o7planning.sbangularjs.model.EmployeeForm;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class MainRESTController {
+
+    @Autowired
+    private EmployeeDAO employeeDAO;
+
+
+    // URL:
+    // http://localhost:8080/SomeContextPath/employees
+    // http://localhost:8080/SomeContextPath/employees.xml
+    // http://localhost:8080/SomeContextPath/employees.json
+    @RequestMapping(value = "/employees", //
+            method = RequestMethod.GET, //
+            produces = { MediaType.APPLICATION_JSON_VALUE, //
+                    MediaType.APPLICATION_XML_VALUE })
+    @ResponseBody
+    public List<Employee> getEmployees() {
+        List<Employee> list = employeeDAO.getAllEmployees();
+        return list;
+    }
+
+    // URL:
+    // http://localhost:8080/SomeContextPath/employee/{empId}
+    // http://localhost:8080/SomeContextPath/employee/{empId}.xml
+    // http://localhost:8080/SomeContextPath/employee/{empId}.json
+    @RequestMapping(value = "/employee/{empId}", //
+            method = RequestMethod.GET, //
+            produces = { MediaType.APPLICATION_JSON_VALUE, //
+                    MediaType.APPLICATION_XML_VALUE })
+    @ResponseBody
+    public Employee getEmployee(@PathVariable("empId") Long empId) {
+        return employeeDAO.getEmployee(empId);
+    }
+
+    // URL:
+    // http://localhost:8080/SomeContextPath/employee
+    // http://localhost:8080/SomeContextPath/employee.xml
+    // http://localhost:8080/SomeContextPath/employee.json
+
+    @RequestMapping(value = "/employee", //
+            method = RequestMethod.POST, //
+            produces = { MediaType.APPLICATION_JSON_VALUE, //
+                    MediaType.APPLICATION_XML_VALUE })
+    @ResponseBody
+    public Employee addEmployee(@RequestBody EmployeeForm empForm) {
+
+        System.out.println("(Service Side) Creating employee with empNo: " + empForm.getEmpNo());
+
+        return employeeDAO.addEmployee(empForm);
+    }
+
+    // URL:
+    // http://localhost:8080/SomeContextPath/employee
+    // http://localhost:8080/SomeContextPath/employee.xml
+    // http://localhost:8080/SomeContextPath/employee.json
+    @RequestMapping(value = "/employee", //
+            method = RequestMethod.PUT, //
+            produces = { MediaType.APPLICATION_JSON_VALUE, //
+                    MediaType.APPLICATION_XML_VALUE })
+    @ResponseBody
+    public Employee updateEmployee(@RequestBody EmployeeForm empForm) {
+
+        System.out.println("(Service Side) Editing employee with Id: " + empForm.getEmpId());
+
+        return employeeDAO.updateEmployee(empForm);
+    }
+
+    // URL:
+    // http://localhost:8080/SomeContextPath/employee/{empId}
+    @RequestMapping(value = "/employee/{empId}", //
+            method = RequestMethod.DELETE, //
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    @ResponseBody
+    public void deleteEmployee(@PathVariable("empId") Long empId) {
+
+        System.out.println("(Service Side) Deleting employee with Id: " + empId);
+
+        employeeDAO.deleteEmployee(empId);
+    }
+
+}

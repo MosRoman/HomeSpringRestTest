@@ -16,7 +16,7 @@ public class Application {
     @Bean
     public CommandLineRunner demo(final PetsService petsService) {
         return arg -> {
-            for(int i=0;i<10;i++) {
+            for(int i=0;i<5;i++) {
                 petsService.addPet(new Pets("cat "+i, "black "+i));
                 petsService.addPet(new Pets("dog "+i, "rudy "+i));
             }
